@@ -21,7 +21,8 @@ export function LoginPage({ onLoginSuccess }) {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    if (!email.endsWith('@constantine2.dz') && !email.endsWith('@gmail.com') && !email.endsWith('@univ-constantine2.dz')) {
+    const cleanedEmail = email.trim().toLowerCase();
+    if (!cleanedEmail.endsWith('@constantine2.dz') && !cleanedEmail.endsWith('@gmail.com') && !cleanedEmail.endsWith('@univ-constantine2.dz')) {
       setErrorMsg('ACCESS DENIED — UNAUTHORIZED DOMAIN');
       setIsLoading(false);
       return;
