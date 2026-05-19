@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { RotateCcw, Download } from 'lucide-react';
-import { getPerformanceStatus, TOTAL_COEFF } from '../utils/constants';
+import { RotateCcw, Download, TerminalSquare } from 'lucide-react';
+import { getPerformanceStatus } from '../utils/constants';
 
 const CircularProgress = ({ value, colorClass, glowClass }) => {
   const [progress, setProgress] = useState(0);
@@ -9,29 +9,27 @@ const CircularProgress = ({ value, colorClass, glowClass }) => {
   const circumference = 2 * Math.PI * radius;
   
   useEffect(() => {
-    const timer = setTimeout(() => setProgress(value), 300);
+    const timer = setTimeout(() => setProgress(value), 500);
     return () => clearTimeout(timer);
   }, [value]);
 
   const strokeDashoffset = circumference - (progress / 20) * circumference;
 
   return (
-    <div className={`relative flex items-center justify-center ${glowClass} rounded-full transition-shadow duration-1000`}>
+    <div className={`relative flex items-center justify-center ${glowClass} rounded-full transition-shadow duration-1000 group`}>
       <svg className="w-64 h-64 transform -rotate-90">
-        {/* Background circle */}
         <circle
-          className="text-slate-800/50"
-          strokeWidth="12"
+          className="text-[var(--color-background)]"
+          strokeWidth="6"
           stroke="currentColor"
           fill="transparent"
           r={radius}
           cx="128"
           cy="128"
         />
-        {/* Progress circle */}
         <circle
           className={colorClass}
-          strokeWidth="12"
+          strokeWidth="6"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
@@ -45,14 +43,14 @@ const CircularProgress = ({ value, colorClass, glowClass }) => {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <motion.span 
-          initial={{ opacity: 0, scale: 0.5 }}
+          initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 1, duration: 0.5 }}
-          className="text-6xl font-black text-white tracking-tighter"
+          className="text-6xl font-black text-white tracking-tighter animate-flicker"
         >
           {progress.toFixed(2)}
         </motion.span>
-        <span className="text-sm font-medium text-slate-400 mt-1 uppercase tracking-widest">Out of 20</span>
+        <span className="text-xs font-mono text-[var(--color-muted-foreground)] mt-2 uppercase tracking-widest">Global Index</span>
       </div>
     </div>
   );
@@ -60,6 +58,20 @@ const CircularProgress = ({ value, colorClass, glowClass }) => {
 
 const ResultPage = ({ results, finalAverage, onReset }) => {
   const status = getPerformanceStatus(finalAverage);
+  
+  // Convert standard Tailwind colors to neon equivalents for this theme
+  let neonColor = "text-[var(--color-neon-cyan)]";
+  let neonGlow = "neon-text-cyan";
+  let borderGlow = "neon-border-cyan";
+  if (finalAverage < 10) {
+    neonColor = "text-red-500";
+    neonGlow = "neon-text-red";
+    borderGlow = "shadow-[0_0_15px_rgba(239,68,68,0.3)]";
+  } else if (finalAverage >= 14) {
+    neonColor = "text-[var(--color-neon-purple)]";
+    neonGlow = "neon-text-purple";
+    borderGlow = "neon-border-purple";
+  }
 
   const container = {
     hidden: { opacity: 0 },
@@ -70,103 +82,113 @@ const ResultPage = ({ results, finalAverage, onReset }) => {
   };
 
   const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+    hidden: { opacity: 0, x: -20 },
+    show: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
-      animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-      exit={{ opacity: 0, y: -30 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="w-full max-w-4xl mx-auto px-4 py-12"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
+      transition={{ duration: 0.5 }}
+      className="w-full relative"
     >
-      <div className="glass-card rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden">
-        {/* Ambient background glow inside card */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[150%] h-[50%] bg-gradient-to-b from-cyan-500/10 to-transparent blur-3xl pointer-events-none" />
-
-        <div className="flex flex-col md:flex-row items-center gap-12 mb-16 relative z-10">
-          <div className="flex-1 text-center md:text-left">
-            <motion.h2 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
-              className="text-xl text-cyan-400 font-semibold tracking-wider uppercase mb-2"
-            >
-              Final Result
-            </motion.h2>
-            <motion.h1 
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6 }}
-              className="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight"
-            >
-              Semester <br/> Performance
-            </motion.h1>
-            
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-              className="inline-block px-6 py-2 rounded-full glass-input border-cyan-500/30"
-            >
-              <span className="text-slate-300">Status: </span>
-              <span className={`font-bold ${status.color}`}>{status.text}</span>
-            </motion.div>
-          </div>
+      <div className="relative group">
+        <div className={`absolute -inset-1 rounded-xl blur-lg opacity-20 pointer-events-none ${finalAverage >= 10 ? 'bg-gradient-to-r from-[var(--color-neon-cyan)] via-[var(--color-neon-purple)] to-[var(--color-neon-cyan)]' : 'bg-red-500'}`} />
+        
+        <div className="relative bg-[var(--color-card)]/80 backdrop-blur-xl border border-[var(--color-border)] rounded-xl p-6 md:p-10">
           
-          <div className="flex-shrink-0">
-            <CircularProgress value={finalAverage} colorClass={status.color} glowClass={status.glow} />
+          <div className="flex flex-col md:flex-row items-center gap-12 mb-12 relative z-10">
+            <div className="flex-1 text-center md:text-left">
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-none border border-[var(--color-neon-purple)]/30 bg-[var(--color-neon-purple)]/5 text-[var(--color-neon-purple)] text-xs uppercase tracking-widest mb-4 font-mono"
+              >
+                <TerminalSquare size={14} className="animate-glitch" />
+                Processing Complete
+              </motion.div>
+              
+              <motion.h1 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+                className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-widest uppercase"
+              >
+                Output <br/> Terminal
+              </motion.h1>
+              
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className={`inline-flex items-center px-4 py-2 border ${borderGlow} bg-[var(--color-background)]/50 font-mono text-sm`}
+              >
+                <span className="text-[var(--color-muted-foreground)] mr-2">System Status: </span>
+                <span className={`font-bold ${neonColor} ${neonGlow} animate-pulse`}>{status.text.toUpperCase()}</span>
+              </motion.div>
+            </div>
+            
+            <div className="flex-shrink-0">
+              <CircularProgress value={finalAverage} colorClass={neonColor} glowClass="" />
+            </div>
           </div>
+
+          {/* Detailed Breakdown */}
+          <motion.div 
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10 z-10 relative"
+          >
+            {results.map((res) => (
+              <motion.div key={res.module.id} variants={item} className="p-4 bg-[var(--color-background)]/50 border border-[var(--color-border)] hover:border-[var(--color-neon-cyan)]/50 transition-all flex justify-between items-center group/mod">
+                <div>
+                  <h4 className="text-xs font-bold text-white tracking-widest uppercase mb-2">{res.module.name}</h4>
+                  <div className="flex gap-4 text-[10px] text-[var(--color-muted-foreground)] font-mono tracking-widest uppercase">
+                    <span>TD: <span className="text-white">{res.td}</span></span>
+                    <span>EXAM: <span className="text-white">{res.exam}</span></span>
+                    <span className="text-[var(--color-neon-cyan)]">CF: {res.module.coeff}</span>
+                  </div>
+                </div>
+                <div className={`text-xl font-bold ${Number(res.average) >= 10 ? 'text-[var(--color-neon-cyan)]' : 'text-red-500'} font-mono`}>
+                  {res.average}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Actions */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2 }}
+            className="flex flex-col sm:flex-row gap-4 justify-end pt-8 border-t border-[var(--color-border)] z-10 relative"
+          >
+            <button 
+              onClick={onReset}
+              className="flex items-center justify-center gap-2 h-12 px-8 font-mono text-xs uppercase tracking-widest text-[var(--color-muted-foreground)] bg-transparent hover:text-white transition-all border border-[var(--color-border)] hover:border-[var(--color-neon-purple)]"
+            >
+              <RotateCcw size={16} />
+              Re-initialize
+            </button>
+            <button 
+              onClick={() => window.print()}
+              className="flex items-center justify-center gap-2 h-12 px-8 font-mono text-xs uppercase tracking-widest bg-transparent border-2 border-[var(--color-neon-cyan)] text-[var(--color-neon-cyan)] hover:bg-[var(--color-neon-cyan)] hover:text-[var(--color-background)] transition-all duration-300 neon-border-cyan"
+            >
+              <Download size={16} />
+              Export Data
+            </button>
+          </motion.div>
         </div>
 
-        {/* Detailed Breakdown */}
-        <motion.div 
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10 z-10 relative"
-        >
-          {results.map((res) => (
-            <motion.div key={res.module.id} variants={item} className="p-4 rounded-2xl bg-slate-900/40 border border-slate-700/50 hover:bg-slate-800/40 hover:border-cyan-500/30 transition-all flex justify-between items-center">
-              <div>
-                <h4 className="text-sm font-semibold text-slate-200 mb-1">{res.module.name}</h4>
-                <div className="flex gap-3 text-xs text-slate-500 font-medium">
-                  <span>TD: <span className="text-slate-300">{res.td}</span></span>
-                  <span>Exam: <span className="text-slate-300">{res.exam}</span></span>
-                  <span className="text-cyan-600">Coeff: {res.module.coeff}</span>
-                </div>
-              </div>
-              <div className={`text-lg font-bold ${Number(res.average) >= 10 ? 'text-teal-400' : 'text-rose-400'}`}>
-                {res.average}
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Actions */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8 border-t border-slate-800/50 z-10 relative"
-        >
-          <button 
-            onClick={onReset}
-            className="flex items-center gap-2 px-8 py-3 rounded-xl font-semibold text-slate-300 bg-slate-800/50 hover:bg-slate-700 hover:text-white transition-all border border-slate-700"
-          >
-            <RotateCcw size={18} />
-            Recalculate
-          </button>
-          <button 
-            onClick={() => window.print()}
-            className="flex items-center gap-2 px-8 py-3 rounded-xl font-semibold text-slate-900 bg-cyan-400 hover:bg-cyan-300 transition-all shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:shadow-[0_0_30px_rgba(34,211,238,0.5)]"
-          >
-            <Download size={18} />
-            Export PDF
-          </button>
-        </motion.div>
+        {/* Decorative corner brackets */}
+        <div className="absolute -top-2 -left-2 w-6 h-6 border-t-2 border-l-2 border-[var(--color-neon-cyan)] pointer-events-none" />
+        <div className="absolute -top-2 -right-2 w-6 h-6 border-t-2 border-r-2 border-[var(--color-neon-purple)] pointer-events-none" />
+        <div className="absolute -bottom-2 -left-2 w-6 h-6 border-b-2 border-l-2 border-[var(--color-neon-purple)] pointer-events-none" />
+        <div className="absolute -bottom-2 -right-2 w-6 h-6 border-b-2 border-r-2 border-[var(--color-neon-cyan)] pointer-events-none" />
       </div>
     </motion.div>
   );
