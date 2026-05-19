@@ -21,7 +21,7 @@ export function LoginPage({ onLoginSuccess }) {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    if (!email.endsWith('@constantine2.dz')) {
+    if (!email.endsWith('@constantine2.dz') && !email.endsWith('@gmail.com') && !email.endsWith('@univ-constantine2.dz')) {
       setErrorMsg('ACCESS DENIED — UNAUTHORIZED DOMAIN');
       setIsLoading(false);
       return;
@@ -106,7 +106,7 @@ export function LoginPage({ onLoginSuccess }) {
                       <Network className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--color-muted-foreground)] group-focus-within/input:text-[var(--color-neon-cyan)] transition-colors" />
                       <input
                         type="email"
-                        placeholder="name@constantine2.dz"
+                        placeholder="name@univ-constantine2.dz"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full pl-11 pr-4 h-12 bg-[var(--color-input)] border border-[var(--color-border)] rounded-md text-white placeholder:text-[var(--color-muted-foreground)] focus:outline-none focus:border-[var(--color-neon-cyan)] transition-all"
